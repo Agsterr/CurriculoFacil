@@ -1,0 +1,4 @@
+storePassword=SuaSenhaDoKeystore
+keyPassword=SuaSenhaDaChave
+keyAlias=upload
+storeFile=C:/Caminho/Para/Sua/upload-keystore.jks

@@ -1,0 +1,25 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'language.freezed.dart';
+part 'language.g.dart';
+
+enum LanguageProficiency {
+  basic,
+  intermediate,
+  advanced,
+  fluent,
+  native,
+}
+
+@freezed
+class Language with _$Language {
+  const factory Language({
+    required String id,
+    required String name,
+    required LanguageProficiency proficiency,
+    @Default(true) bool isConfirmed,
+  }) = _Language;
+
+  factory Language.fromJson(Map<String, dynamic> json) =>
+      _$LanguageFromJson(json);
+}

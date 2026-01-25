@@ -1,0 +1,75 @@
+name: curriculofacil
+description: Aplicativo profissional para criação de currículos.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Architecture & State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  
+  # Navigation
+  go_router: ^13.0.0
+  
+  # Data & Models
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.8.1
+  equatable: ^2.0.5
+  uuid: ^4.2.1
+  
+  # Local Storage (Offline-first)
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  shared_preferences: ^2.2.2
+  
+  # UI & Assets
+  google_fonts: ^6.1.0
+  flutter_svg: ^2.0.9
+  intl: ^0.20.0
+  flutter_localizations:
+    sdk: flutter
+  
+  # Utils & Services
+  pdf: ^3.10.4
+  printing: ^5.11.1
+  path_provider: ^2.1.1
+  share_plus: ^12.0.1
+  url_launcher: ^6.2.1
+  flutter_dotenv: ^5.1.0 # Security requirement
+  image_picker: ^1.0.7
+  image_cropper: ^8.0.2
+  file_picker: ^8.0.0
+  open_file: ^3.3.2
+  speech_to_text: ^7.0.0
+  permission_handler: ^11.3.0
+  google_mlkit_text_recognition: ^0.13.0
+  
+  # Monetization
+  google_mobile_ads: ^4.0.0
+  in_app_purchase: ^3.1.12
+  pdf_render_maintained: ^1.6.1
+  image: ^4.5.4
+  sqflite_common_ffi: ^2.4.0+2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  
+  # Code Generation
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.9
+  freezed: ^2.4.6
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - .env

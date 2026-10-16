@@ -21,153 +21,145 @@ class ResumeCustomizationSheet extends ConsumerWidget {
       maxChildSize: 0.9,
       expand: false,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: ListView(
-            controller: scrollController,
-            padding: const EdgeInsets.all(20),
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const Text('Personalizar Currículo', 
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              
-              _buildSectionTitle('Layout'),
-              const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _TemplateOption(
-                      label: 'Moderno',
-                      icon: Icons.dashboard,
-                      isSelected: style.templateId == 'modern',
-                      onTap: () => notifier.updateStyle(style.copyWith(templateId: 'modern')),
-                    ),
-                    const SizedBox(width: 10),
-                    _TemplateOption(
-                      label: 'Clássico',
-                      icon: Icons.article,
-                      isSelected: style.templateId == 'classic',
-                      onTap: () => notifier.updateStyle(style.copyWith(templateId: 'classic')),
-                    ),
-                    const SizedBox(width: 10),
-                    _TemplateOption(
-                      label: 'Minimalista',
-                      icon: Icons.notes,
-                      isSelected: style.templateId == 'minimalist',
-                      onTap: () => notifier.updateStyle(style.copyWith(templateId: 'minimalist')),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 20),
-              _buildSectionTitle('Cores'),
-              const SizedBox(height: 10),
-              const Text('Cor Principal', style: TextStyle(fontSize: 14, color: Colors.grey)),
-              const SizedBox(height: 5),
-              _ColorPickerRow(
-                selectedColor: style.primaryColor,
-                onColorSelected: (color) => notifier.updateStyle(style.copyWith(primaryColor: color)),
-              ),
-              const SizedBox(height: 10),
-              const Text('Cor Secundária', style: TextStyle(fontSize: 14, color: Colors.grey)),
-              const SizedBox(height: 5),
-              _ColorPickerRow(
-                selectedColor: style.secondaryColor,
-                onColorSelected: (color) => notifier.updateStyle(style.copyWith(secondaryColor: color)),
-              ),
-
-              const SizedBox(height: 20),
-              _buildSectionTitle('Estilo & Moldura'),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
+        final theme = Theme.of(context);
+        final mutedStyle = theme.textTheme.bodyMedium?.copyWith(
+          color: theme.colorScheme.onSurfaceVariant,
+        );
+        return ListView(
+          controller: scrollController,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          children: [
+            Text(
+              'Personalizar Currículo',
+              style: theme.textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            _buildSectionTitle(context, 'Layout'),
+            const SizedBox(height: 10),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                  _ChipOption(
-                    label: 'Sem Moldura',
-                    selected: style.frameType == 'none',
-                    onSelected: (_) => notifier.updateStyle(style.copyWith(frameType: 'none')),
+                  _TemplateOption(
+                    label: 'Moderno',
+                    icon: Icons.dashboard,
+                    isSelected: style.templateId == 'modern',
+                    onTap: () => notifier
+                        .updateStyle(style.copyWith(templateId: 'modern')),
                   ),
-                  _ChipOption(
-                    label: 'Linha Lateral',
-                    selected: style.frameType == 'side',
-                    onSelected: (_) => notifier.updateStyle(style.copyWith(frameType: 'side')),
+                  const SizedBox(width: 10),
+                  _TemplateOption(
+                    label: 'Clássico',
+                    icon: Icons.article,
+                    isSelected: style.templateId == 'classic',
+                    onTap: () => notifier
+                        .updateStyle(style.copyWith(templateId: 'classic')),
                   ),
-                  _ChipOption(
-                    label: 'Linha Superior',
-                    selected: style.frameType == 'top_line',
-                    onSelected: (_) => notifier.updateStyle(style.copyWith(frameType: 'top_line')),
-                  ),
-                  _ChipOption(
-                    label: 'Caixa',
-                    selected: style.frameType == 'box',
-                    onSelected: (_) => notifier.updateStyle(style.copyWith(frameType: 'box')),
+                  const SizedBox(width: 10),
+                  _TemplateOption(
+                    label: 'Minimalista',
+                    icon: Icons.notes,
+                    isSelected: style.templateId == 'minimalist',
+                    onTap: () => notifier
+                        .updateStyle(style.copyWith(templateId: 'minimalist')),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 20),
-              _buildSectionTitle('Opções de Visualização'),
-              SwitchListTile(
-                title: const Text('Exibir Foto'),
-                value: style.showPhoto,
-                onChanged: (val) => notifier.updateStyle(style.copyWith(showPhoto: val)),
-              ),
-              SwitchListTile(
-                title: const Text('Destacar Itens Não Confirmados'),
-                subtitle: const Text('Marca em amarelo campos que precisam de revisão'),
-                value: ref.watch(draftModeProvider),
-                onChanged: (val) => ref.read(draftModeProvider.notifier).state = val,
-              ),
-              
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: () {
-                  // Reset to default
-                  notifier.updateStyle(const ResumeStyle());
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Restaurar Padrão'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[200],
-                  foregroundColor: Colors.black,
-                  elevation: 0,
+            ),
+            const SizedBox(height: 20),
+            _buildSectionTitle(context, 'Cores'),
+            const SizedBox(height: 10),
+            Text('Cor Principal', style: mutedStyle),
+            const SizedBox(height: 5),
+            _ColorPickerRow(
+              selectedColor: style.primaryColor,
+              onColorSelected: (color) =>
+                  notifier.updateStyle(style.copyWith(primaryColor: color)),
+            ),
+            const SizedBox(height: 10),
+            Text('Cor Secundária', style: mutedStyle),
+            const SizedBox(height: 5),
+            _ColorPickerRow(
+              selectedColor: style.secondaryColor,
+              onColorSelected: (color) =>
+                  notifier.updateStyle(style.copyWith(secondaryColor: color)),
+            ),
+            const SizedBox(height: 20),
+            _buildSectionTitle(context, 'Estilo & Moldura'),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                _ChipOption(
+                  label: 'Sem Moldura',
+                  selected: style.frameType == 'none',
+                  onSelected: (_) =>
+                      notifier.updateStyle(style.copyWith(frameType: 'none')),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
+                _ChipOption(
+                  label: 'Linha Lateral',
+                  selected: style.frameType == 'side',
+                  onSelected: (_) =>
+                      notifier.updateStyle(style.copyWith(frameType: 'side')),
+                ),
+                _ChipOption(
+                  label: 'Linha Superior',
+                  selected: style.frameType == 'top_line',
+                  onSelected: (_) => notifier
+                      .updateStyle(style.copyWith(frameType: 'top_line')),
+                ),
+                _ChipOption(
+                  label: 'Caixa',
+                  selected: style.frameType == 'box',
+                  onSelected: (_) =>
+                      notifier.updateStyle(style.copyWith(frameType: 'box')),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildSectionTitle(context, 'Opções de Visualização'),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Exibir Foto'),
+              value: style.showPhoto,
+              onChanged: (val) =>
+                  notifier.updateStyle(style.copyWith(showPhoto: val)),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Destacar Itens Não Confirmados'),
+              subtitle:
+                  const Text('Marca em amarelo campos que precisam de revisão'),
+              value: ref.watch(draftModeProvider),
+              onChanged: (val) =>
+                  ref.read(draftModeProvider.notifier).state = val,
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () {
+                // Reset to default
+                notifier.updateStyle(const ResumeStyle());
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Restaurar Padrão'),
+            ),
+            const SizedBox(height: 20),
+          ],
         );
       },
     );
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Text(
       title.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.bold,
         letterSpacing: 1.2,
-        color: Colors.grey,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -195,7 +187,9 @@ class _TemplateOption extends StatelessWidget {
         width: 100,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primaryContainer : Colors.grey[100],
+          color: isSelected
+              ? colorScheme.primaryContainer
+              : colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? colorScheme.primary : Colors.transparent,
@@ -206,14 +200,16 @@ class _TemplateOption extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? colorScheme.primary : Colors.grey[600],
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? colorScheme.primary : Colors.grey[800],
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
               ),
@@ -230,7 +226,8 @@ class _ColorPickerRow extends StatelessWidget {
   final int selectedColor;
   final ValueChanged<int> onColorSelected;
 
-  const _ColorPickerRow({required this.selectedColor, required this.onColorSelected});
+  const _ColorPickerRow(
+      {required this.selectedColor, required this.onColorSelected});
 
   static const List<int> _colors = [
     0xFF2196F3, // Blue
@@ -249,6 +246,7 @@ class _ColorPickerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -264,13 +262,13 @@ class _ColorPickerRow extends StatelessWidget {
                 color: Color(colorValue),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? Colors.black : Colors.grey.shade300,
+                  color: isSelected ? scheme.onSurface : scheme.outlineVariant,
                   width: isSelected ? 2 : 1,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         )
@@ -307,7 +305,9 @@ class _ChipOption extends StatelessWidget {
       onSelected: onSelected,
       selectedColor: Theme.of(context).colorScheme.primaryContainer,
       labelStyle: TextStyle(
-        color: selected ? Theme.of(context).colorScheme.primary : Colors.black,
+        color: selected
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.onSurface,
         fontWeight: selected ? FontWeight.bold : FontWeight.normal,
       ),
       checkmarkColor: Theme.of(context).colorScheme.primary,

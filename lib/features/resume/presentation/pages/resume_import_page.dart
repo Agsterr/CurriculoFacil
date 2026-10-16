@@ -8,6 +8,7 @@ import '../../data/services/resume_import_service.dart';
 import '../../domain/entities/resume_draft.dart';
 import '../../../../services/curriculo_service.dart';
 import '../../../../models/curriculo_model.dart' as model;
+import '../../../../shared/widgets/app_ui.dart';
 
 class ResumeImportPage extends ConsumerStatefulWidget {
   const ResumeImportPage({super.key});
@@ -44,7 +45,7 @@ class _ResumeImportPageState extends ConsumerState<ResumeImportPage> {
 
     try {
       File? file;
-      
+
       if (fromCamera) {
         final picker = ImagePicker();
         final picked = await picker.pickImage(source: ImageSource.camera);
@@ -83,7 +84,7 @@ class _ResumeImportPageState extends ConsumerState<ResumeImportPage> {
     if (_draft == null) return;
 
     final currentResume = ref.read(currentCurriculoServiceProvider);
-    
+
     if (currentResume != null) {
       // Update Providers
       final newPersonalData = currentResume.personalData.copyWith(
@@ -91,7 +92,9 @@ class _ResumeImportPageState extends ConsumerState<ResumeImportPage> {
         email: _emailController.text,
         phone: _phoneController.text,
       );
-      ref.read(currentCurriculoServiceProvider.notifier).updatePersonalData(newPersonalData);
+      ref
+          .read(currentCurriculoServiceProvider.notifier)
+          .updatePersonalData(newPersonalData);
 
       // Add Collections (Simple addition for MVP)
       for (final exp in _draft!.experiences) {
@@ -105,9 +108,11 @@ class _ResumeImportPageState extends ConsumerState<ResumeImportPage> {
           description: exp.description,
           isConfirmed: exp.isConfirmed,
         );
-        ref.read(currentCurriculoServiceProvider.notifier).addExperience(modelExp);
+        ref
+            .read(currentCurriculoServiceProvider.notifier)
+            .addExperience(modelExp);
       }
-      
+
       for (final edu in _draft!.education) {
         final modelEdu = model.Education(
           id: edu.id,
@@ -119,129 +124,238 @@ class _ResumeImportPageState extends ConsumerState<ResumeImportPage> {
           isCurrent: edu.isCurrent,
           isConfirmed: edu.isConfirmed,
         );
-        ref.read(currentCurriculoServiceProvider.notifier).addEducation(modelEdu);
+        ref
+            .read(currentCurriculoServiceProvider.notifier)
+            .addEducation(modelEdu);
       }
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Dados importados com sucesso! Revise os detalhes.')),
+      const SnackBar(
+          content: Text('Dados importados com sucesso! Revise os detalhes.')),
     );
 
-    context.go('/personal-data'); // Go to first step to refine
+    context.pushReplacement('/personal-data'); // Go to first step to refine
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Importar Currículo')),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Lendo documento com IA...'),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 20),
+                  Text('Lendo seu documento...',
+                      style: theme.textTheme.titleMedium),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Isso pode levar alguns segundos.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
                 ],
               ),
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_draft == null) ...[
-                    const Icon(Icons.document_scanner, size: 80, color: Colors.blue),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Tire uma foto ou anexe um PDF do seu currículo antigo para preenchimento automático.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 48),
-                    ElevatedButton.icon(
-                      onPressed: () => _pickFile(true),
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Tirar Foto'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                if (_draft == null) ...[
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Container(
+                      width: 112,
+                      height: 112,
+                      decoration: BoxDecoration(
+                        color: scheme.primaryContainer.withValues(alpha: 0.6),
+                        shape: BoxShape.circle,
                       ),
+                      child: Icon(Icons.document_scanner_outlined,
+                          size: 52, color: scheme.primary),
                     ),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      onPressed: () => _pickFile(false),
-                      icon: const Icon(Icons.upload_file),
-                      label: const Text('Anexar Arquivo (PDF/Img)'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.all(16),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Aproveite seu currículo antigo',
+                    style: theme.textTheme.titleLarge,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tire uma foto ou anexe um PDF e nós preenchemos os campos automaticamente para você revisar.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  _SourceOption(
+                    icon: Icons.photo_camera_outlined,
+                    title: 'Tirar foto',
+                    subtitle: 'Fotografe o currículo impresso',
+                    onTap: () => _pickFile(true),
+                  ),
+                  const SizedBox(height: 12),
+                  _SourceOption(
+                    icon: Icons.upload_file_outlined,
+                    title: 'Anexar arquivo',
+                    subtitle: 'PDF, JPG ou PNG do seu aparelho',
+                    onTap: () => _pickFile(false),
+                  ),
+                ] else ...[
+                  FormSectionCard(
+                    title: 'Revise os dados identificados',
+                    icon: Icons.fact_check_outlined,
+                    children: [
+                      TextField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Nome Completo',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
                       ),
-                    ),
-                  ] else ...[
-                    const Text(
-                      'Revise os dados identificados:',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(labelText: 'Nome Completo'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'E-mail'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _phoneController,
-                      decoration: const InputDecoration(labelText: 'Telefone'),
-                    ),
-                    const SizedBox(height: 24),
-                    if (_draft!.experiences.isNotEmpty)
-                      _buildInfoCard(
-                        'Experiências Detectadas', 
-                        '${_draft!.experiences.length} item(s) encontrado(s). Será necessário detalhar datas e descrições.',
-                        Icons.work,
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'E-mail',
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
                       ),
-                    const SizedBox(height: 16),
-                    if (_draft!.education.isNotEmpty)
-                      _buildInfoCard(
-                        'Formação Detectada',
-                        '${_draft!.education.length} item(s) encontrado(s).',
-                        Icons.school,
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Telefone',
+                          prefixIcon: Icon(Icons.phone_outlined),
+                        ),
                       ),
-                    const SizedBox(height: 32),
-                    FilledButton(
-                      onPressed: _confirmImport,
-                      child: const Text('Confirmar e Editar'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  if (_draft!.experiences.isNotEmpty) ...[
+                    _buildInfoCard(
+                      'Experiências detectadas',
+                      '${_draft!.experiences.length} item(s) encontrado(s). Será necessário detalhar datas e descrições.',
+                      Icons.work_outline,
                     ),
-                    TextButton(
-                      onPressed: () => setState(() => _draft = null),
-                      child: const Text('Cancelar / Tentar Novamente'),
-                    ),
+                    const SizedBox(height: 12),
                   ],
-                  if (_errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
+                  if (_draft!.education.isNotEmpty) ...[
+                    _buildInfoCard(
+                      'Formação detectada',
+                      '${_draft!.education.length} item(s) encontrado(s).',
+                      Icons.school_outlined,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    onPressed: _confirmImport,
+                    icon: const Icon(Icons.check),
+                    label: const Text('Confirmar e Editar'),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => setState(() => _draft = null),
+                    child: const Text('Cancelar / Tentar Novamente'),
+                  ),
+                ],
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Card(
+                      color: scheme.errorContainer,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            Icon(Icons.error_outline,
+                                color: scheme.onErrorContainer),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style:
+                                    TextStyle(color: scheme.onErrorContainer),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
     );
   }
 
   Widget _buildInfoCard(String title, String subtitle, IconData icon) {
+    final scheme = Theme.of(context).colorScheme;
     return Card(
-      color: Colors.blue.shade50,
+      color: scheme.secondaryContainer.withValues(alpha: 0.6),
       child: ListTile(
-        leading: Icon(icon, color: Colors.blue),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: IconBadge(icon: icon, color: scheme.secondary),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(subtitle),
+      ),
+    );
+  }
+}
+
+class _SourceOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _SourceOption({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Card(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              IconBadge(icon: icon, color: scheme.primary, size: 48),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../models/curriculo_model.dart';
 import '../../../../services/curriculo_service.dart';
 import '../../../../shared/widgets/speech_text_field.dart';
+import '../../../../shared/widgets/app_ui.dart';
 import '../../../../shared/widgets/ocr_button.dart';
 
 class EducationFormPage extends ConsumerStatefulWidget {
@@ -51,9 +52,7 @@ class _EducationFormPageState extends ConsumerState<EducationFormPage> {
     final now = DateTime.now();
     final firstDate = DateTime(1950);
 
-    DateTime initialDate = isStart
-        ? (_startDate ?? now)
-        : (_endDate ?? now);
+    DateTime initialDate = isStart ? (_startDate ?? now) : (_endDate ?? now);
 
     // Proteção: initialDate deve estar entre firstDate e lastDate
     if (initialDate.isAfter(now)) initialDate = now;
@@ -91,7 +90,8 @@ class _EducationFormPageState extends ConsumerState<EducationFormPage> {
         id: widget.education?.id ?? const Uuid().v4(),
         institution: _institutionController.text,
         degree: _degreeController.text,
-        fieldOfStudy: _fieldController.text.isEmpty ? null : _fieldController.text,
+        fieldOfStudy:
+            _fieldController.text.isEmpty ? null : _fieldController.text,
         startDate: _startDate!,
         endDate: _isCurrent ? null : _endDate,
         isCurrent: _isCurrent,
@@ -109,108 +109,103 @@ class _EducationFormPageState extends ConsumerState<EducationFormPage> {
   }
 
   String _formatDate(DateTime? date) {
-    if (date == null) return 'Selecionar Data';
+    if (date == null) return 'Selecionar';
     return DateFormat('dd/MM/yyyy').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.education != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.education != null ? 'Editar Formação' : 'Nova Formação'),
+        title: Text(isEditing ? 'Editar Formação' : 'Nova Formação'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              SpeechTextField(
-                controller: _institutionController,
-                labelText: 'Instituição de Ensino *',
-                prefixIcon: Icons.school_outlined,
-                validator: (v) => v?.isEmpty == true ? 'Informe a instituição' : null,
-                suffixAction: OCRButton(
-                  onTextRecognized: (text) => _institutionController.text = text,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              SpeechTextField(
-                controller: _degreeController,
-                labelText: 'Tipo de Formação (Grau) *',
-                hintText: 'Ex: Bacharelado, Técnico, Pós-graduação',
-                prefixIcon: Icons.workspace_premium_outlined,
-                validator: (v) => v?.isEmpty == true ? 'Informe o tipo de formação' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              SpeechTextField(
-                controller: _fieldController,
-                labelText: 'Curso *',
-                hintText: 'Ex: Engenharia de Software, Administração',
-                prefixIcon: Icons.menu_book_outlined,
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => _pickDate(true),
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Início *',
-                          prefixIcon: Icon(Icons.calendar_today),
-                        ),
-                        child: Text(_formatDate(_startDate)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: InkWell(
-                      onTap: _isCurrent ? null : () => _pickDate(false),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Término',
-                          prefixIcon: const Icon(Icons.calendar_today),
-                          enabled: !_isCurrent,
-                        ),
-                        child: Text(_isCurrent ? 'Cursando' : _formatDate(_endDate)),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Estudo aqui atualmente'),
-                value: _isCurrent,
-                onChanged: (val) {
-                  setState(() {
-                    _isCurrent = val ?? false;
-                    if (_isCurrent) _endDate = null;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 32),
-
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _save,
-                  icon: const Icon(Icons.check),
-                  label: Text(widget.education != null ? 'Atualizar' : 'Adicionar'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            FormSectionCard(
+              title: 'Curso',
+              icon: Icons.school_outlined,
+              children: [
+                SpeechTextField(
+                  controller: _institutionController,
+                  labelText: 'Instituição de Ensino *',
+                  prefixIcon: Icons.account_balance_outlined,
+                  validator: (v) =>
+                      v?.isEmpty == true ? 'Informe a instituição' : null,
+                  suffixAction: OCRButton(
+                    onTextRecognized: (text) =>
+                        _institutionController.text = text,
                   ),
                 ),
-              ),
-            ],
-          ),
+                const SizedBox(height: 16),
+                SpeechTextField(
+                  controller: _degreeController,
+                  labelText: 'Tipo de Formação (Grau) *',
+                  hintText: 'Ex: Bacharelado, Técnico, Pós-graduação',
+                  prefixIcon: Icons.workspace_premium_outlined,
+                  validator: (v) =>
+                      v?.isEmpty == true ? 'Informe o tipo de formação' : null,
+                ),
+                const SizedBox(height: 16),
+                SpeechTextField(
+                  controller: _fieldController,
+                  labelText: 'Curso',
+                  hintText: 'Ex: Engenharia de Software, Administração',
+                  prefixIcon: Icons.menu_book_outlined,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            FormSectionCard(
+              title: 'Período',
+              icon: Icons.date_range_outlined,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: DateField(
+                        label: 'Início *',
+                        value: _formatDate(_startDate),
+                        onTap: () => _pickDate(true),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DateField(
+                        label: 'Término',
+                        value: _isCurrent ? 'Cursando' : _formatDate(_endDate),
+                        enabled: !_isCurrent,
+                        onTap: () => _pickDate(false),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Estudo aqui atualmente'),
+                  value: _isCurrent,
+                  onChanged: (val) {
+                    setState(() {
+                      _isCurrent = val;
+                      if (_isCurrent) _endDate = null;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomActionBar(
+        child: FilledButton.icon(
+          onPressed: _save,
+          icon: const Icon(Icons.check),
+          label: Text(isEditing ? 'Salvar Alterações' : 'Adicionar Formação'),
         ),
       ),
     );

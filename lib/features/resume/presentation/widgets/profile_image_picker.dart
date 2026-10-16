@@ -28,7 +28,8 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
           final shouldOpenSettings = await PermissionDialog.show(
             context: context,
             title: 'Acesso à Câmera',
-            content: 'Para tirar uma foto para seu currículo, precisamos acessar a câmera. Ative nas configurações.',
+            content:
+                'Para tirar uma foto para seu currículo, precisamos acessar a câmera. Ative nas configurações.',
             icon: Icons.no_photography,
           );
           if (shouldOpenSettings) {
@@ -49,12 +50,12 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
 
         final requestStatus = await Permission.camera.request();
         if (!requestStatus.isGranted) {
-           if (mounted) {
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Permissão de câmera negada')),
             );
-           }
-           return;
+          }
+          return;
         }
       }
     }
@@ -103,11 +104,13 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
 
       if (croppedFile != null) {
         final savedPath = await _saveImageLocally(croppedFile.path);
-        
+
         final resume = ref.read(currentCurriculoServiceProvider);
         if (resume != null) {
           final newData = resume.personalData.copyWith(photoPath: savedPath);
-          ref.read(currentCurriculoServiceProvider.notifier).updatePersonalData(newData);
+          ref
+              .read(currentCurriculoServiceProvider.notifier)
+              .updatePersonalData(newData);
         }
       }
     } catch (e) {
@@ -152,6 +155,7 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final resume = ref.watch(currentCurriculoServiceProvider);
     final photoPath = resume?.personalData.photoPath;
 
@@ -160,26 +164,34 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
         children: [
           GestureDetector(
             onTap: _showSourceBottomSheet,
-            child: CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.grey.shade200,
-              backgroundImage: photoPath != null
-                  ? FileImage(File(photoPath))
-                  : null,
-              child: photoPath == null
-                  ? Icon(Icons.person, size: 60, color: Colors.grey.shade400)
-                  : null,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                    color: scheme.primary.withValues(alpha: 0.4), width: 2),
+              ),
+              child: CircleAvatar(
+                radius: 60,
+                backgroundColor: scheme.surfaceContainerHighest,
+                backgroundImage:
+                    photoPath != null ? FileImage(File(photoPath)) : null,
+                child: photoPath == null
+                    ? Icon(Icons.person,
+                        size: 60, color: scheme.onSurfaceVariant)
+                    : null,
+              ),
             ),
           ),
           Positioned(
-            bottom: 0,
-            right: 0,
+            bottom: 4,
+            right: 4,
             child: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: scheme.primary,
               radius: 18,
               child: IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                icon: Icon(Icons.camera_alt, size: 18, color: scheme.onPrimary),
                 onPressed: _showSourceBottomSheet,
               ),
             ),

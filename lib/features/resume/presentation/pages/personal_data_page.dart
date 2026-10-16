@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../services/curriculo_service.dart';
+import '../../../../shared/widgets/app_ui.dart';
 import '../widgets/profile_image_picker.dart';
 
 class PersonalDataPage extends ConsumerStatefulWidget {
@@ -22,26 +23,12 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
     if (resume == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Dados Pessoais')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.orange),
-              const SizedBox(height: 16),
-              const Text(
-                'Nenhum currículo selecionado.',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text('Selecione ou crie um currículo para editar.'),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: () => context.go('/'),
-                icon: const Icon(Icons.list),
-                label: const Text('Ir para Meus Currículos'),
-              ),
-            ],
-          ),
+        body: EmptyState(
+          icon: Icons.description_outlined,
+          title: 'Nenhum currículo selecionado',
+          message: 'Selecione ou crie um currículo para editar.',
+          actionLabel: 'Ir para Meus Currículos',
+          onAction: () => context.go('/'),
         ),
       );
     }
@@ -53,17 +40,18 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
       appBar: AppBar(
         title: const Text('Dados Pessoais'),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 32.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            const SizedBox(height: 8),
+            const ProfileImagePicker(),
+            const SizedBox(height: 24),
+            FormSectionCard(
+              title: 'Identificação',
+              icon: Icons.badge_outlined,
               children: [
-                const ProfileImagePicker(),
-                const SizedBox(height: 24),
-
                 // Resume Title
                 TextFormField(
                   initialValue: resume.title,
@@ -77,7 +65,7 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Full Name
                 TextFormField(
                   initialValue: personalData.fullName,
@@ -99,8 +87,13 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                     personalData.copyWith(fullName: value),
                   ),
                 ),
-                const SizedBox(height: 16),
-
+              ],
+            ),
+            const SizedBox(height: 16),
+            FormSectionCard(
+              title: 'Contato',
+              icon: Icons.contact_phone_outlined,
+              children: [
                 // Email
                 TextFormField(
                   initialValue: personalData.email,
@@ -113,7 +106,8 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe seu e-mail';
                     }
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    final emailRegex =
+                        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                     if (!emailRegex.hasMatch(value)) {
                       return 'E-mail inválido';
                     }
@@ -148,12 +142,13 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                     personalData.copyWith(phone: value),
                   ),
                 ),
-                const SizedBox(height: 16),
-
-                // Address Fields
-                const Text('Endereço', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                
+              ],
+            ),
+            const SizedBox(height: 16),
+            FormSectionCard(
+              title: 'Endereço',
+              icon: Icons.location_on_outlined,
+              children: [
                 Row(
                   children: [
                     Expanded(
@@ -162,7 +157,7 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                         initialValue: personalData.zipCode,
                         decoration: const InputDecoration(
                           labelText: 'CEP',
-                          prefixIcon: Icon(Icons.map),
+                          prefixIcon: Icon(Icons.markunread_mailbox_outlined),
                         ),
                         keyboardType: TextInputType.number,
                         onChanged: (value) => notifier.updatePersonalData(
@@ -177,7 +172,7 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                         initialValue: personalData.city,
                         decoration: const InputDecoration(
                           labelText: 'Cidade',
-                          prefixIcon: Icon(Icons.location_city),
+                          prefixIcon: Icon(Icons.location_city_outlined),
                         ),
                         onChanged: (value) => notifier.updatePersonalData(
                           personalData.copyWith(city: value),
@@ -187,7 +182,6 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                
                 Row(
                   children: [
                     Expanded(
@@ -219,7 +213,6 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-
                 Row(
                   children: [
                     Expanded(
@@ -241,7 +234,8 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                       child: TextFormField(
                         initialValue: personalData.state,
                         decoration: const InputDecoration(
-                          labelText: 'Estado (UF)',
+                          labelText: 'UF',
+                          counterText: '',
                         ),
                         maxLength: 2,
                         onChanged: (value) => notifier.updatePersonalData(
@@ -251,8 +245,13 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-
+              ],
+            ),
+            const SizedBox(height: 16),
+            FormSectionCard(
+              title: 'Links e objetivo',
+              icon: Icons.link,
+              children: [
                 // LinkedIn
                 TextFormField(
                   initialValue: personalData.linkedinUrl,
@@ -296,29 +295,28 @@ class _PersonalDataPageState extends ConsumerState<PersonalDataPage> {
                     personalData.copyWith(professionalObjective: value),
                   ),
                 ),
-                const SizedBox(height: 32),
-
-                FilledButton.icon(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Dados salvos com sucesso!')),
-                      );
-                      // Navegar para a tela inicial limpando a pilha de navegação
-                      context.go('/');
-                    }
-                  },
-                  icon: const Icon(Icons.check),
-                  label: const Text('Salvar e Concluir'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-                // Espaço extra para garantir visibilidade com teclado/navegação
-                SizedBox(height: MediaQuery.of(context).viewInsets.bottom > 0 ? 0 : 40),
               ],
             ),
-          ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomActionBar(
+        child: FilledButton.icon(
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Dados salvos com sucesso!')),
+              );
+              // Navegar para a tela inicial limpando a pilha de navegação
+              context.go('/');
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Revise os campos destacados.')),
+              );
+            }
+          },
+          icon: const Icon(Icons.check),
+          label: const Text('Salvar e Concluir'),
         ),
       ),
     );

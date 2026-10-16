@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../models/curriculo_model.dart';
 import '../../../../services/curriculo_service.dart';
 import '../../../../shared/widgets/speech_text_field.dart';
+import '../../../../shared/widgets/app_ui.dart';
 import '../../../../shared/widgets/ocr_button.dart';
 
 class ExperienceFormPage extends ConsumerStatefulWidget {
@@ -18,11 +19,11 @@ class ExperienceFormPage extends ConsumerStatefulWidget {
 
 class _ExperienceFormPageState extends ConsumerState<ExperienceFormPage> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _companyController;
   late TextEditingController _roleController;
   late TextEditingController _descriptionController;
-  
+
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isCurrent = false;
@@ -51,14 +52,12 @@ class _ExperienceFormPageState extends ConsumerState<ExperienceFormPage> {
     final now = DateTime.now();
     final firstDate = DateTime(1950);
 
-    DateTime initialDate = isStart 
-        ? (_startDate ?? now) 
-        : (_endDate ?? now);
-        
+    DateTime initialDate = isStart ? (_startDate ?? now) : (_endDate ?? now);
+
     // Proteção: initialDate deve estar entre firstDate e lastDate
     if (initialDate.isAfter(now)) initialDate = now;
     if (initialDate.isBefore(firstDate)) initialDate = firstDate;
-        
+
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -89,14 +88,18 @@ class _ExperienceFormPageState extends ConsumerState<ExperienceFormPage> {
 
       if (!_isCurrent && _endDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Selecione a data de término ou marque "Trabalho aqui atualmente"')),
+          const SnackBar(
+              content: Text(
+                  'Selecione a data de término ou marque "Trabalho aqui atualmente"')),
         );
         return;
       }
 
       if (!_isCurrent && _endDate != null && _startDate!.isAfter(_endDate!)) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('A data de início não pode ser posterior à data de término')),
+          const SnackBar(
+              content: Text(
+                  'A data de início não pode ser posterior à data de término')),
         );
         return;
       }
@@ -123,7 +126,7 @@ class _ExperienceFormPageState extends ConsumerState<ExperienceFormPage> {
   }
 
   String _formatDate(DateTime? date) {
-    if (date == null) return 'Selecionar Data';
+    if (date == null) return 'Selecionar';
     return DateFormat('dd/MM/yyyy').format(date);
   }
 
@@ -135,103 +138,105 @@ class _ExperienceFormPageState extends ConsumerState<ExperienceFormPage> {
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Experiência' : 'Nova Experiência'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              SpeechTextField(
-                controller: _roleController,
-                labelText: 'Cargo *',
-                prefixIcon: Icons.work_outline,
-                validator: (v) => v?.isEmpty == true ? 'Informe o cargo' : null,
-              ),
-              const SizedBox(height: 16),
-              
-              SpeechTextField(
-                controller: _companyController,
-                labelText: 'Empresa *',
-                prefixIcon: Icons.business,
-                validator: (v) => v?.isEmpty == true ? 'Informe a empresa' : null,
-              ),
-              const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => _pickDate(true),
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Início *',
-                          prefixIcon: Icon(Icons.calendar_today),
-                        ),
-                        child: Text(_formatDate(_startDate)),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            FormSectionCard(
+              title: 'Cargo e empresa',
+              icon: Icons.work_outline,
+              children: [
+                SpeechTextField(
+                  controller: _roleController,
+                  labelText: 'Cargo *',
+                  hintText: 'Ex: Assistente Administrativo',
+                  prefixIcon: Icons.badge_outlined,
+                  validator: (v) =>
+                      v?.isEmpty == true ? 'Informe o cargo' : null,
+                ),
+                const SizedBox(height: 16),
+                SpeechTextField(
+                  controller: _companyController,
+                  labelText: 'Empresa *',
+                  prefixIcon: Icons.business_outlined,
+                  validator: (v) =>
+                      v?.isEmpty == true ? 'Informe a empresa' : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            FormSectionCard(
+              title: 'Período',
+              icon: Icons.date_range_outlined,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: DateField(
+                        label: 'Início *',
+                        value: _formatDate(_startDate),
+                        onTap: () => _pickDate(true),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: InkWell(
-                      onTap: _isCurrent ? null : () => _pickDate(false),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Término',
-                          prefixIcon: const Icon(Icons.calendar_today),
-                          enabled: !_isCurrent,
-                        ),
-                        child: Text(_isCurrent ? 'Atual' : _formatDate(_endDate)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DateField(
+                        label: 'Término',
+                        value: _isCurrent ? 'Atual' : _formatDate(_endDate),
+                        enabled: !_isCurrent,
+                        onTap: () => _pickDate(false),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              
-              CheckboxListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Trabalho aqui atualmente'),
-                value: _isCurrent,
-                onChanged: (val) {
-                  setState(() {
-                    _isCurrent = val ?? false;
-                    if (_isCurrent) _endDate = null;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 8),
-
-              SpeechTextField(
-                controller: _descriptionController,
-                labelText: 'Descrição das atividades',
-                prefixIcon: Icons.description,
-                validator: (v) => v?.isEmpty == true ? 'Descreva suas atividades' : null,
-                suffixAction: OCRButton(
-                  onTextRecognized: (text) {
-                    if (text.isNotEmpty) {
-                       final current = _descriptionController.text;
-                       _descriptionController.text = current.isEmpty ? text : '$current\n$text';
-                    }
+                  ],
+                ),
+                const SizedBox(height: 4),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Trabalho aqui atualmente'),
+                  value: _isCurrent,
+                  onChanged: (val) {
+                    setState(() {
+                      _isCurrent = val;
+                      if (_isCurrent) _endDate = null;
+                    });
                   },
                 ),
-              ),
-
-              const SizedBox(height: 32),
-
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _save,
-                  icon: const Icon(Icons.check),
-                  label: Text(isEditing ? 'Atualizar' : 'Adicionar'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+              ],
+            ),
+            const SizedBox(height: 16),
+            FormSectionCard(
+              title: 'Atividades',
+              icon: Icons.notes_outlined,
+              children: [
+                SpeechTextField(
+                  controller: _descriptionController,
+                  labelText: 'Descrição das atividades *',
+                  hintText: 'Principais responsabilidades e resultados',
+                  prefixIcon: Icons.description_outlined,
+                  validator: (v) =>
+                      v?.isEmpty == true ? 'Descreva suas atividades' : null,
+                  suffixAction: OCRButton(
+                    onTextRecognized: (text) {
+                      if (text.isNotEmpty) {
+                        final current = _descriptionController.text;
+                        _descriptionController.text =
+                            current.isEmpty ? text : '$current\n$text';
+                      }
+                    },
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomActionBar(
+        child: FilledButton.icon(
+          onPressed: _save,
+          icon: const Icon(Icons.check),
+          label:
+              Text(isEditing ? 'Salvar Alterações' : 'Adicionar Experiência'),
         ),
       ),
     );

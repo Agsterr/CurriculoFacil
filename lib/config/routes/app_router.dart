@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/resume/presentation/pages/personal_data_page.dart';
@@ -9,6 +8,8 @@ import '../../features/resume/presentation/pages/skill_list_page.dart';
 import '../../features/resume/presentation/pages/attachments_page.dart';
 import '../../features/resume/presentation/pages/home_page.dart';
 import '../../features/resume/presentation/pages/resume_list_page.dart';
+import '../../features/resume/presentation/pages/language_list_page.dart';
+import '../../features/resume/presentation/pages/resume_import_page.dart';
 
 part 'app_router.g.dart';
 
@@ -40,6 +41,14 @@ GoRouter router(RouterRef ref) {
       GoRoute(
         path: '/skills',
         builder: (context, state) => const SkillListPage(),
+      ),
+      GoRoute(
+        path: '/languages',
+        builder: (context, state) => const LanguageListPage(),
+      ),
+      GoRoute(
+        path: '/import',
+        builder: (context, state) => const ResumeImportPage(),
       ),
       GoRoute(
         path: '/attachments',

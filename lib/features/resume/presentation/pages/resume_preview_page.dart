@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 import '../../../../core/services/pdf/pdf_generator_service.dart';
 import '../../../../services/curriculo_service.dart';
-import '../../../../models/curriculo_model.dart';
+import '../../../../shared/widgets/app_ui.dart';
 import '../widgets/resume_customization_sheet.dart';
 
 final draftModeProvider = StateProvider<bool>((ref) => false);
@@ -21,8 +21,10 @@ class ResumePreviewPage extends ConsumerWidget {
         appBar: AppBar(
           title: const Text('Pré-visualização'),
         ),
-        body: const Center(
-          child: Text('Nenhum currículo selecionado para visualização.'),
+        body: const EmptyState(
+          icon: Icons.visibility_off_outlined,
+          title: 'Nada para visualizar',
+          message: 'Nenhum currículo selecionado para visualização.',
         ),
       );
     }
@@ -32,7 +34,8 @@ class ResumePreviewPage extends ConsumerWidget {
         title: const Text('Pré-visualização'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            tooltip: 'Personalizar',
+            icon: const Icon(Icons.tune),
             onPressed: () {
               _showCustomizationSheet(context);
             },
@@ -48,9 +51,10 @@ class ResumePreviewPage extends ConsumerWidget {
         loadingWidget: const Center(child: CircularProgressIndicator()),
         pdfFileName: 'curriculo.pdf',
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCustomizationSheet(context),
-        child: const Icon(Icons.edit),
+        icon: const Icon(Icons.palette_outlined),
+        label: const Text('Personalizar'),
       ),
     );
   }
@@ -59,9 +63,7 @@ class ResumePreviewPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => const ResumeCustomizationSheet(),
     );
   }
 }
-
